@@ -121,7 +121,7 @@ module Brcobranca
       # Logotipo do banco
       # @return [Path] Caminho para o arquivo de logotipo do banco.
       def logotipo
-        if template == :carne
+        if template == 'carne'
           File.join(File.dirname(__FILE__), '..', 'arquivos', 'logos', "#{class_name}_carne.eps")
         else
           File.join(File.dirname(__FILE__), '..', 'arquivos', 'logos', "#{class_name}.eps")
