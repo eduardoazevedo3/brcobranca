@@ -17,7 +17,7 @@ module Brcobranca
       include Brcobranca::Validations
 
       # <b>REQUERIDO</b>: Modelo da logo (boleto ou carnê)
-      attr_accessor :template
+      attr_accessor :modelo_logo
       # <b>REQUERIDO</b>: Número do convênio/contrato do cliente junto ao banco emissor
       attr_accessor :convenio
       # <b>REQUERIDO</b>: Tipo de moeda utilizada (Real(R$) e igual a 9)
@@ -121,13 +121,7 @@ module Brcobranca
       # Logotipo do banco
       # @return [Path] Caminho para o arquivo de logotipo do banco.
       def logotipo
-        p template
-        p template
-        p template
-        p template
-        p template
-        raise template.to_s
-        if template == 'carne'
+        if modelo_logo == 'carne'
           File.join(File.dirname(__FILE__), '..', 'arquivos', 'logos', "#{class_name}_carne.eps")
         else
           File.join(File.dirname(__FILE__), '..', 'arquivos', 'logos', "#{class_name}.eps")
