@@ -90,6 +90,10 @@ module Brcobranca
       attr_accessor :avalista_documento
       # <b>OPCIONAL</b>: Endereço do beneficiário
       attr_accessor :cedente_endereco
+      # <b>OPCIONAL</b>: Parcela do carnê
+      attr_accessor :parcela
+      # <b>OPCIONAL</b>: Total de parcelas do carnê
+      attr_accessor :total_parcelas
 
       # Validações
       validates_presence_of :agencia, :conta_corrente, :moeda, :especie_documento, :especie, :aceite, :nosso_numero, :sacado, :sacado_documento, message: 'não pode estar em branco.'

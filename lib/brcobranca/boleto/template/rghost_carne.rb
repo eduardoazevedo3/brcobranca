@@ -113,7 +113,7 @@ module Brcobranca
             colunas = calc_colunas 1
             linhas = calc_linhas margin_bottom
 
-            modelo_carne_build_data_left(doc, boleto, colunas, linhas, curr_page_position)
+            modelo_carne_build_data_left(doc, boleto, colunas, linhas)
             modelo_carne_build_data_right(doc, boleto, colunas, linhas)
 
             if curr_page_position >= max_per_page # maximo 3 boletos por pagina
@@ -170,7 +170,7 @@ module Brcobranca
         end
 
         # aplica dados do lado esquerdo
-        def modelo_carne_build_data_left(doc, boleto, colunas, linhas, idx = 1)
+        def modelo_carne_build_data_left(doc, boleto, colunas, linhas)
           # LOGOTIPO do BANCO
           doc.image boleto.logotipo, x: (colunas[0] - 0.11), y: linhas[0]
 
@@ -196,11 +196,13 @@ module Brcobranca
 
           # numero documento
           doc.moveto x: colunas[0], y: linhas[11]
-          doc.show boleto.numero_documento
+          doc.show boleto.documento_numero
 
-          # sacado
-          doc.moveto x: colunas[0], y: linhas[13]
-          doc.show "Parcela #{boleto.parcela} de #{boleto.total_parcelas}"
+          # parcela
+          if boleto.parcela.present? && boleto.total_parcelas.present?
+            doc.moveto x: colunas[0], y: linhas[13]
+            doc.show "Parcela #{boleto.parcela} de #{boleto.total_parcelas}"
+          end
         end
 
         # aplica dados do lado direito
@@ -281,7 +283,7 @@ module Brcobranca
 
           # Instruções
           doc.moveto x: colunas[2], y: linhas[5]
-          doc.text_area boleto.instrucao, x: colunas[2], y: linhas[5]
+          doc.text_area boleto.instrucoes, x: colunas[2], y: linhas[5]
 
           # Sacado
           doc.moveto x: colunas[2], y: linhas[11]
