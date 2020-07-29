@@ -22,7 +22,7 @@ module Brcobranca
       # Templates para usar com Rghost
       module RghostCarne
         extend self
-        include RGhost unless include?(RGhost)
+        include RGhost unless self.include?(RGhost)
         RGhost::Config::GS[:external_encoding] = Brcobranca.configuration.external_encoding
 
         # Gera o boleto em usando o formato desejado [:pdf, :jpg, :tif, :png, :ps, :laserjet, ... etc]
@@ -113,7 +113,7 @@ module Brcobranca
             colunas = calc_colunas 1
             linhas = calc_linhas margin_bottom
 
-            modelo_carne_build_data_left(doc, boleto, colunas, linhas)
+            modelo_carne_build_data_left(doc, boleto, colunas, linhas, curr_page_position)
             modelo_carne_build_data_right(doc, boleto, colunas, linhas)
 
             if curr_page_position >= max_per_page # maximo 3 boletos por pagina
@@ -134,7 +134,7 @@ module Brcobranca
         # carrega background do boleto
         def modelo_carne_load_background(doc, margin_bottom)
           template_path = File.join(File.dirname(__FILE__), '..', '..', 'arquivos', 'templates', 'modelo_carne.eps')
-          raise 'Não foi possível encontrar o template. Verifique o caminho' unless File.exist?(template_path)
+          fail 'Não foi possível encontrar o template. Verifique o caminho' unless File.exist?(template_path)
 
           doc.image template_path, x: 1, y: margin_bottom
         end
@@ -142,6 +142,7 @@ module Brcobranca
         # define os tamanhos
         def modelo_carne_define_tags(doc)
           doc.define_tags do
+            tag :tarja, size: 40, color: '#FF0000'
             tag :grande, size: 13
             tag :media, size: 10
           end
@@ -170,11 +171,17 @@ module Brcobranca
         end
 
         # aplica dados do lado esquerdo
-        def modelo_carne_build_data_left(doc, boleto, colunas, linhas)
+        def modelo_carne_build_data_left(doc, boleto, colunas, linhas, idx = 1)
           # LOGOTIPO do BANCO
           doc.image boleto.logotipo, x: (colunas[0] - 0.11), y: linhas[0]
 
           # Dados
+          if boleto.tarja.present?
+            doc.rotate 20
+            pt = [{ x: 8, y: 19 }, { x: 4.5, y: 10.5 }, { x: 1.5, y: 2 }]
+            doc.text_area "<tarja>#{boleto.tarja}</tarja>", x: pt[idx - 1][:x], y: pt[idx - 1][:y], width: '21 cm', text_align: :center
+            doc.rotate -20
+          end
 
           # Numero do banco
           doc.moveto x: colunas[1], y: linhas[0]
@@ -194,15 +201,15 @@ module Brcobranca
 
           # valor do documento
           doc.moveto x: colunas[0], y: linhas[4]
-          doc.show boleto.valor_documento.to_currency
+          doc.show boleto.valor_documento && boleto.valor_documento.to_currency
 
           # numero documento
           doc.moveto x: colunas[0], y: linhas[11]
-          doc.show boleto.documento_numero
+          doc.show boleto.numero_documento
 
           # sacado
           doc.moveto x: colunas[0], y: linhas[13]
-          doc.show "#{boleto.sacado}"
+          doc.show "Parcela #{boleto.parcela} de #{boleto.total_parcelas}"
         end
 
         # aplica dados do lado direito
@@ -240,7 +247,7 @@ module Brcobranca
 
           # numero documento
           doc.moveto x: colunas[3], y: linhas[3]
-          doc.show boleto.documento_numero
+          doc.show boleto.numero_documento
 
           # especie doc.
           doc.moveto x: colunas[8], y: linhas[3]
@@ -275,25 +282,15 @@ module Brcobranca
 
           # valor documento
           doc.moveto x: colunas[8], y: linhas[4]
-          doc.show boleto.valor_documento.to_currency
+          doc.show boleto.valor_documento && boleto.valor_documento.to_currency
 
           # valor do documento
           doc.moveto x: colunas[11], y: linhas[4]
-          doc.show boleto.valor_documento.to_currency
+          doc.show boleto.valor_documento && boleto.valor_documento.to_currency
 
           # Instruções
           doc.moveto x: colunas[2], y: linhas[5]
-          doc.show boleto.instrucao1
-          doc.moveto x: colunas[2], y: linhas[6]
-          doc.show boleto.instrucao2
-          doc.moveto x: colunas[2], y: linhas[7]
-          doc.show boleto.instrucao3
-          doc.moveto x: colunas[2], y: linhas[8]
-          doc.show boleto.instrucao4
-          doc.moveto x: colunas[2], y: linhas[9]
-          doc.show boleto.instrucao5
-          doc.moveto x: colunas[2], y: linhas[10]
-          doc.show boleto.instrucao6
+          doc.text_area boleto.instrucao, x: colunas[2], y: linhas[5]
 
           # Sacado
           doc.moveto x: colunas[2], y: linhas[11]
