@@ -142,7 +142,6 @@ module Brcobranca
         # define os tamanhos
         def modelo_carne_define_tags(doc)
           doc.define_tags do
-            tag :tarja, size: 40, color: '#FF0000'
             tag :grande, size: 13
             tag :media, size: 10
           end
@@ -174,14 +173,6 @@ module Brcobranca
         def modelo_carne_build_data_left(doc, boleto, colunas, linhas, idx = 1)
           # LOGOTIPO do BANCO
           doc.image boleto.logotipo, x: (colunas[0] - 0.11), y: linhas[0]
-
-          # Dados
-          if boleto.tarja.present?
-            doc.rotate 20
-            pt = [{ x: 8, y: 19 }, { x: 4.5, y: 10.5 }, { x: 1.5, y: 2 }]
-            doc.text_area "<tarja>#{boleto.tarja}</tarja>", x: pt[idx - 1][:x], y: pt[idx - 1][:y], width: '21 cm', text_align: :center
-            doc.rotate -20
-          end
 
           # Numero do banco
           doc.moveto x: colunas[1], y: linhas[0]
