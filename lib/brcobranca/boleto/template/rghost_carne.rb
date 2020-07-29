@@ -240,7 +240,7 @@ module Brcobranca
 
           # numero documento
           doc.moveto x: colunas[3], y: linhas[3]
-          doc.show boleto.numero_documento
+          doc.show boleto.documento_numero
 
           # especie doc.
           doc.moveto x: colunas[8], y: linhas[3]
