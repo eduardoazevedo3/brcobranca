@@ -87,13 +87,13 @@ module Brcobranca
 
           # Gerando QRCode a partir de um emv
           if boleto.emv
-            doc.barcode_qrcode(boleto.emv, width: '2.5 cm',
-                                           height: '2.5 cm',
+            doc.barcode_qrcode(boleto.emv, width: '3.5 cm',
+                                           height: '3.5 cm',
                                            eclevel: 'H',
-                                           x: "#{@x + 12.9} cm",
-                                           y: "#{@y - 2.50} cm")
-            move_more(doc, @x + 12.9, @y - 3.70)
-            doc.show 'Pague com PIX'
+                                           x: "#{@x - 1.8} cm",
+                                           y: "#{@y + 16.3} cm")
+            move_more(doc, @x - 4.15, @y + 13)
+            doc.show 'Pague com PIX', tag: :grande
           end
 
           # Gerando stream
@@ -129,13 +129,13 @@ module Brcobranca
 
             # Gerando QRCode a partir de um emv
             if boleto.emv
-              doc.barcode_qrcode(boleto.emv, width: '2.5 cm',
-                                             height: '2.5 cm',
+              doc.barcode_qrcode(boleto.emv, width: '3.5 cm',
+                                             height: '3.5 cm',
                                              eclevel: 'H',
-                                             x: "#{@x + 12.9} cm",
-                                             y: "#{@y - 2.50} cm")
-              move_more(doc, @x + 12.9, @y - 3.70)
-              doc.show 'Pague com PIX'
+                                             x: "#{@x - 1.8} cm",
+                                             y: "#{@y + 16.3} cm")
+              move_more(doc, @x - 4.15, @y + 13)
+              doc.show 'Pague com PIX', tag: :grande
             end
 
             # Cria nova página se não for o último boleto
@@ -219,8 +219,8 @@ module Brcobranca
           doc.show boleto.sacado_endereco.to_s
           return unless boleto.demonstrativo
 
-          doc.text_area boleto.demonstrativo, width: '18.5 cm', text_align: :left, x: "#{@x - 0.8} cm",
-                                              y: "#{@y - 0.9} cm", row_height: '0.4 cm'
+          doc.text_area boleto.demonstrativo, width: '15.5 cm', text_align: :left, x: "#{@x + 3.1} cm",
+                                              y: "#{@y - 1.1} cm", row_height: '0.4 cm'
 
           # FIM Primeira parte do BOLETO
         end
