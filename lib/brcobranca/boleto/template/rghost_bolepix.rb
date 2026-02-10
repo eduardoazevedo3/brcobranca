@@ -94,6 +94,7 @@ module Brcobranca
                                            y: "#{@y + 16.3} cm")
             move_more(doc, @x - 4.15, @y + 13)
             doc.show 'Pague com PIX', tag: :grande
+            modelo_generico_emv(doc, boleto)
           end
 
           # Gerando stream
@@ -136,6 +137,7 @@ module Brcobranca
                                              y: "#{@y + 16.3} cm")
               move_more(doc, @x - 4.15, @y + 13)
               doc.show 'Pague com PIX', tag: :grande
+              modelo_generico_emv(doc, boleto)
             end
 
             # Cria nova página se não for o último boleto
@@ -155,7 +157,85 @@ module Brcobranca
           doc.define_tags do
             tag :grande, size: 13
             tag :maior, size: 15
+            tag :pequena, size: 11
           end
+        end
+
+        # Renderiza o texto EMV com quebra automática por caractere (como CSS word-break: break-all)
+        def modelo_generico_emv(doc, boleto)
+          emv_escaped = boleto.emv.gsub('\\', '\\\\\\\\').gsub('(', '\\(').gsub(')', '\\)')
+          box_x = (1.5 * 28.3465).round(2)
+          box_y = ((@y - 1.6) * 28.3465).round(2)
+          box_w = (18 * 28.3465).round(2)
+          row_h = (0.45 * 28.3465).round(2)
+
+          doc.raw <<~PS
+            gsave
+            /Helvetica findfont 9 scalefont setfont
+            /bw #{box_w} def
+            /sx #{box_x} def
+            /rh #{row_h} def
+            /pad 5 def
+            /innerw bw pad 2 mul sub def
+
+            % Primeira passada: contar linhas
+            /nlines 1 def
+            /cx 0 def
+            (#{emv_escaped})
+            {
+              /ch exch def
+              ( ) dup 0 ch put
+              stringwidth pop /cw exch def
+              cx cw add innerw gt {
+                /nlines nlines 1 add def
+                /cx 0 def
+              } if
+              /cx cx cw add def
+            } forall
+
+            % Desenhar caixa
+            /boxh nlines rh mul pad 2 mul add 5 add def
+            /boxtop #{box_y} 9 add pad add 5 add def
+            newpath
+            sx boxtop moveto
+            bw 0 rlineto
+            0 boxh neg rlineto
+            bw neg 0 rlineto
+            closepath
+            0.4 setlinewidth
+            stroke
+
+            % Label sobrepondo a borda da caixa com fundo branco
+            /Helvetica-Bold findfont 9 scalefont setfont
+            /lbltext (PIX copia e cola) def
+            /lblw lbltext stringwidth pop def
+            /lblx sx 10 add def
+            /lbly boxtop 3 sub def
+            newpath
+            lblx 3 sub lbly 2 sub moveto
+            lblw 6 add 0 rlineto
+            0 12 rlineto
+            lblw 6 add neg 0 rlineto
+            closepath
+            1 setgray fill
+            0 setgray
+            lblx lbly moveto
+            lbltext show
+            /Helvetica findfont 9 scalefont setfont
+
+            % Segunda passada: renderizar texto com padding
+            sx pad add #{box_y} moveto
+            (#{emv_escaped})
+            {
+              /ch exch def
+              ( ) dup 0 ch put
+              dup stringwidth pop
+              currentpoint pop sx pad add sub add
+              innerw gt { sx pad add currentpoint exch pop rh sub moveto } if
+              show
+            } forall
+            grestore
+          PS
         end
 
         def move_more(doc, x, y)
