@@ -299,8 +299,13 @@ module Brcobranca
           doc.show boleto.sacado_endereco.to_s
           return unless boleto.demonstrativo
 
-          doc.text_area boleto.demonstrativo, width: '15.5 cm', text_align: :left, x: "#{@x + 3.1} cm",
-                                              y: "#{@y - 1.1} cm", row_height: '0.4 cm'
+          if boleto.emv
+            doc.text_area boleto.demonstrativo, width: '15.5 cm', text_align: :left, x: "#{@x + 3.1} cm",
+                                                y: "#{@y - 1.1} cm", row_height: '0.4 cm'
+          else
+            doc.text_area boleto.demonstrativo, width: '18.5 cm', text_align: :left, x: "#{@x - 0.8} cm",
+                                                y: "#{@y - 0.9} cm", row_height: '0.4 cm'
+          end
 
           # FIM Primeira parte do BOLETO
         end
