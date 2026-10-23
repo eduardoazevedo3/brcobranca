@@ -26,6 +26,20 @@ module Brcobranca
         RGhost::Config::GS[:external_encoding] = Brcobranca.configuration.external_encoding
         RGhost::Config::GS[:default_params] << '-dNOSAFER'
 
+        LARGURA_SACADO_CANHOTO = 114
+        TAMANHOS_SACADO_CANHOTO = [8, 7, 6].freeze
+        LARGURAS_HELVETICA = (' '..'~').zip(
+          [278, 278, 355, 556, 556, 889, 667, 191, 333, 333, 389, 584, 278, 333, 278, 278] +
+          ([556] * 10) +
+          [278, 278, 584, 584, 584, 556, 1015] +
+          [667, 667, 722, 722, 667, 611, 778, 722, 278, 500, 667, 556, 833,
+           722, 778, 667, 778, 722, 667, 611, 722, 667, 944, 667, 667, 611] +
+          [278, 278, 278, 469, 556, 333] +
+          [556, 556, 500, 556, 556, 278, 556, 556, 222, 222, 500, 222, 833,
+           556, 556, 556, 556, 333, 500, 278, 556, 500, 722, 500, 500, 500] +
+          [334, 260, 334, 584]
+        ).to_h.freeze
+
         # Gera o boleto em usando o formato desejado [:pdf, :jpg, :tif, :png, :ps, :laserjet, ... etc]
         #
         # @return [Stream]
@@ -145,6 +159,7 @@ module Brcobranca
           doc.define_tags do
             tag :grande, size: 13
             tag :media, size: 10
+            TAMANHOS_SACADO_CANHOTO.each { |tamanho| tag :"sacado_canhoto_#{tamanho}", size: tamanho }
           end
         end
 
@@ -203,7 +218,25 @@ module Brcobranca
 
           # sacado
           doc.moveto x: colunas[0], y: linhas[13]
-          doc.show boleto.sacado.to_s
+          modelo_carne_sacado_canhoto(doc, boleto.sacado.to_s)
+        end
+
+        def modelo_carne_sacado_canhoto(doc, sacado)
+          tamanho = TAMANHOS_SACADO_CANHOTO.find { |t| cabe_no_canhoto?(sacado, t) }
+
+          unless tamanho
+            tamanho = TAMANHOS_SACADO_CANHOTO.last
+            sacado = sacado.chop while sacado.length > 1 && !cabe_no_canhoto?("#{sacado}...", tamanho)
+            sacado = "#{sacado.rstrip}..."
+          end
+
+          doc.show sacado, tag: :"sacado_canhoto_#{tamanho}"
+        end
+
+        def cabe_no_canhoto?(texto, tamanho)
+          sem_acento = texto.unicode_normalize(:nfd).gsub(/\p{Mn}/, '')
+          largura = sem_acento.each_char.sum { |c| LARGURAS_HELVETICA.fetch(c, 556) } * tamanho / 1000.0
+          largura <= LARGURA_SACADO_CANHOTO
         end
 
         # aplica dados do lado direito
